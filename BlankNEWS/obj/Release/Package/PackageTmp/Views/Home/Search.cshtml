@@ -1,0 +1,33 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "BlankNEWS";
+}
+@using SimpleFeedReader;
+
+<h2 align="center"><font color="white">@ViewData["Title"]</font></h2>
+<div>
+    @using (Html.BeginForm())
+    {
+        <p><font color="white">Keyword: </font>@Html.TextBox("Keyword", null, new { placeholder = "Search Keyword" })</p>
+        <font color="white">
+            <p>Algoritma:</p>
+            <p style="text-indent: 4em">@Html.RadioButton("Algorithm", "KMP") KMP</p>
+            <p style="text-indent: 4em">@Html.RadioButton("Algorithm", "Booyer-Moore") Booyer-Moore</p>
+            <p style="text-indent: 4em">@Html.RadioButton("Algorithm", "Regex") Regex</p>
+        </font>
+        <p><input type="submit" value="Cari Berita" /></p>
+    }
+</div>
+<div>
+    @if (ViewBag.items != null)
+    {
+        foreach (var item in ViewBag.items)
+        {
+            <font color="white">
+                <hr />
+                <h3><strong><a href="@((item as FeedItem).Uri)" style="color: rgb(88, 171, 251)"> @((item as FeedItem).Title) </a></strong></h3>
+                <p> @((item as FeedItem).Summary) </p>
+            </font>
+        }
+    }
+</div>
