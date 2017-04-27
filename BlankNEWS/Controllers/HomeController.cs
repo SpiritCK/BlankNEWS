@@ -35,15 +35,15 @@ namespace BlankNEWS.Controllers
                 var news = feed.RetrieveFeed("http://www.antaranews.com/rss/terkini");
                 ArrayList result = new ArrayList();
                 HtmlDocument htmlDoc = new HtmlDocument();
-                using (var actualArticle = new HttpClient())
+                using (var article = new HttpClient())
                 {
                     foreach (var i in news)
                     {
-                        var response = actualArticle.GetAsync((i as FeedItem).Uri).Result;
+                        var response = article.GetAsync((i as FeedItem).Uri).Result;
                         if (response.IsSuccessStatusCode)
                         {
-                            var responseContent = response.Content;
-                            htmlDoc.LoadHtml(responseContent.ReadAsStringAsync().Result);
+                            var content = response.Content;
+                            htmlDoc.LoadHtml(content.ReadAsStringAsync().Result);
                             HtmlNodeCollection nodes = htmlDoc.DocumentNode.SelectNodes("//div[@id='content_news']");
                             if (nodes != null)
                             {
