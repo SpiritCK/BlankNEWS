@@ -5,6 +5,9 @@ using System.Linq;
 using System.Web;
 using System.Web.Mvc;
 using SimpleFeedReader;
+using HtmlAgilityPack;
+using System.Net.Http;
+using BlankNEWS.Models;
 
 namespace BlankNEWS.Controllers
 {
@@ -25,28 +28,61 @@ namespace BlankNEWS.Controllers
         public ActionResult Search(string Algorithm, string Keyword)
         {
             var feed = new FeedReader();
-            var items = feed.RetrieveFeed("http://rss.vivanews.com/get/all");
+            var news = feed.RetrieveFeed("http://rss.vivanews.com/get/all");
             if (!String.IsNullOrEmpty(Keyword) && !String.IsNullOrEmpty(Algorithm))
             {
                 ArrayList result = new ArrayList();
-                foreach (var i in items)
+                HtmlDocument htmlDoc = new HtmlDocument();
+                using (var actualArticle = new HttpClient())
                 {
-                    if (Algorithm.Equals("KMP"))
+                    foreach (var i in news)
                     {
-                        //search with KMP
-                        //if found, replace i.summary to string that contain keyword, then add to result
+                        var response = actualArticle.GetAsync((i as FeedItem).Uri).Result;
+                        if (response.IsSuccessStatusCode)
+                        {
+                            var responseContent = response.Content;
+                            htmlDoc.LoadHtml(responseContent.ReadAsStringAsync().Result);
+                            HtmlNodeCollection nodes = htmlDoc.DocumentNode.SelectNodes("//div[@id='article-content']");
+                            if (nodes != null)
+                            {
+                                var node = nodes.First();
+                                StringMatch testSearch = new StringMatch(node.InnerText, Keyword);
+                                if (Algorithm.Equals("KMP"))
+                                {
+                                    //search with KMP
+                                    //if found, replace i.Content to string that contain keyword, then add to result
+                                    String searchResult = testSearch.KMPsearch();
+                                    if (!String.IsNullOrEmpty(searchResult))
+                                    {
+                                        i.Content = searchResult;
+                                        result.Add(i as FeedItem);
+                                    }
+                                }
+                                else if (Algorithm.Equals("Booyer-Moore"))
+                                {
+                                    //search with Booyer-Moore
+                                    //if found, replace i.summary to string that contain keyword, then add to result
+                                    String searchResult = testSearch.BoyerMooreSearch();
+                                    if (!String.IsNullOrEmpty(searchResult))
+                                    {
+                                        i.Content = searchResult;
+                                        result.Add(i as FeedItem);
+                                    }
+                                }
+                                else if (Algorithm.Equals("Regex"))
+                                {
+                                    //search with Regex
+                                    //if found, replace i.summary to string that contain keyword, then add to result
+                                    String searchResult = testSearch.RegexSearch();
+                                    if (!String.IsNullOrEmpty(searchResult))
+                                    {
+                                        i.Content = searchResult;
+                                        result.Add(i as FeedItem);
+                                    }
+                                }
+                            }
+                        }
                     }
-                    else if (Algorithm.Equals("Booyer-Moore"))
-                    {
-                        //search with Booyer-Moore
-                        //if found, replace i.summary to string that contain keyword, then add to result
-                    }
-                    else if (Algorithm.Equals("Regex"))
-                    {
-                        //search with Regex
-                        //if found, replace i.summary to string that contain keyword, then add to result
-                    }
-                    result.Add(i as FeedItem);  //delete this later
                 }
                 ViewBag.items = result;
             }
