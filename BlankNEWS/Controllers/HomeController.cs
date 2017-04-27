@@ -8,6 +8,8 @@ using SimpleFeedReader;
 using HtmlAgilityPack;
 using System.Net.Http;
 using BlankNEWS.Models;
+using System.Net;
+using System.Xml.Linq;
 
 namespace BlankNEWS.Controllers
 {
@@ -27,10 +29,10 @@ namespace BlankNEWS.Controllers
 
         public ActionResult Search(string Algorithm, string Keyword)
         {
-            var feed = new FeedReader();
-            var news = feed.RetrieveFeed("http://rss.vivanews.com/get/all");
             if (!String.IsNullOrEmpty(Keyword) && !String.IsNullOrEmpty(Algorithm))
             {
+                var feed = new FeedReader();
+                var news = feed.RetrieveFeed("http://www.antaranews.com/rss/terkini");
                 ArrayList result = new ArrayList();
                 HtmlDocument htmlDoc = new HtmlDocument();
                 using (var actualArticle = new HttpClient())
@@ -42,7 +44,7 @@ namespace BlankNEWS.Controllers
                         {
                             var responseContent = response.Content;
                             htmlDoc.LoadHtml(responseContent.ReadAsStringAsync().Result);
-                            HtmlNodeCollection nodes = htmlDoc.DocumentNode.SelectNodes("//div[@id='article-content']");
+                            HtmlNodeCollection nodes = htmlDoc.DocumentNode.SelectNodes("//div[@id='content_news']");
                             if (nodes != null)
                             {
                                 var node = nodes.First();

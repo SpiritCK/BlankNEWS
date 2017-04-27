@@ -82,6 +82,12 @@ namespace BlankNEWS.Models
                         akhir++;
                     }
 
+
+                    if (awal != 0)
+                    {
+                        awal++;
+                    }
+
                     answer = text.Substring(awal, akhir - awal + 1);
 
                     return answer;
@@ -118,6 +124,7 @@ namespace BlankNEWS.Models
         public static int[] searchString(string text, string pattern)
         {
             List<int> retVal = new List<int>();
+            int temp;
             int m = pattern.Length;
             int n = text.Length;
             int[] heuristic = new int[256];
@@ -128,7 +135,7 @@ namespace BlankNEWS.Models
                 int j = m - 1;
                 while (j >= 0 && pattern[j] == text[s + j])
                 {
-                    --j;
+                    j--;
                 }
                 if (j < 0)
                 {
@@ -144,7 +151,23 @@ namespace BlankNEWS.Models
                 }
                 else
                 {
-                    s += Math.Max(1, j - heuristic[text[s + j]]);
+                    temp = (int)text[j + s];
+                    if ((temp >= 0) && (temp <= 255))
+                    {
+                        if (1 > j - heuristic[temp])
+                        {
+                            s = s + 1;
+                        }
+                        else
+                        {
+                            s = s + j - heuristic[temp];
+                        }
+                    }
+                    else
+                    {
+                        s = s + 1;
+                    }
+                    //                   s += Math.Max(1, j - heuristic[text[s + j]]);
                 }
             }
             return retVal.ToArray();
@@ -184,7 +207,10 @@ namespace BlankNEWS.Models
                 dot = false;
                 if (i != 0)
                 {
-                    i = i + 2;
+                    if (text[i] != ' ')
+                    {
+                        i = i + 2;
+                    }
                 }
                 while (!dot)
                 {
@@ -242,6 +268,10 @@ namespace BlankNEWS.Models
                 while (textInLowerCase[akhir] != '.' && textInLowerCase[akhir] != '?' && textInLowerCase[akhir] != '!' && akhir < textInLowerCase.Length - 1)
                 {
                     akhir++;
+                }
+                if (awal != 0)
+                {
+                    awal++;
                 }
 
                 string answer = text.Substring(awal, akhir - awal + 1);
